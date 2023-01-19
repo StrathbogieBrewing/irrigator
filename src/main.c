@@ -1,73 +1,80 @@
-#include <avr/interrupt.h>
 #include <avr/io.h>
 #include <string.h>
 #include <util/delay.h>
 
-#define TINBUS_BUFFER_BITS (6)
-#define TINBUS_BUFFER_SIZE (1 << TINBUS_BUFFER_BITS)
-#define TINBUS_BUFFER_MASK (TINBUS_BUFFER_SIZE - 1)
+#include "trace.h"
 
-static volatile uint8_t trace_data[TINBUS_BUFFER_SIZE] __attribute__((aligned(TINBUS_BUFFER_SIZE)));
-static volatile uint8_t trace_head = 0;
-static volatile uint8_t trace_tail = 0;
+#define XSTR(x) #x
+#define STR(s) XSTR(s)
 
-ISR(SPI_STC_vect) {
-    if (trace_head != trace_tail) {
-        SPDR = trace_data[trace_tail];
-        trace_data[trace_tail] = SPDR;
-        trace_tail += 1;
-        trace_tail &= TINBUS_BUFFER_MASK;
-    } else {
-        SPCR &= ~(1 << SPIE);
-    }
-}
+#define PORT_DDR(port) DDR##port
+#define PORT_PORT(port) PORT##port
 
-void spi_init(void) {
-    DDRB |= (1 << PORTB2) | (1 << PORTB3) | (1 << PORTB5);
-    PORTB |= (1 << PORTB3);
+#define VALVE_PORT D
 
-    SPCR = (1 << MSTR) | (1 << SPE) | (1 << SPR0) | (1 << SPR1) | (1 << CPHA) | (0 << CPOL);
-}
+#define VALVE_4 4
+#define VALVE_5 5
+#define VALVE_6 6
+#define VALVE_7 7
 
-void spi_write(uint8_t *data, uint8_t size) {
-    cli();
-    trace_data[trace_head] = 0xFE;
-    trace_head += 1;
-    trace_head &= TINBUS_BUFFER_MASK;
-    for (uint8_t index = 0; index < size; index++) {
-        trace_data[trace_head] = data[index];
-        trace_head += 1;
-        trace_head &= TINBUS_BUFFER_MASK;
-        data[index] = trace_data[trace_head];
-    }
-
-    SPDR = 0xFF;
-    SPCR |= (1 << SPIE);
-
-    // if (SPCR & (1 << SPIE) == 0) {
-    // SPCR |= (1 << SPIE);
-    // SPDR = trace_data[trace_tail];
-    // trace_tail += 1;
-    // trace_tail &= TINBUS_BUFFER_MASK;
-    // }
-    sei();
-}
+#define SET_PIN_MODE_OUTPUT(port, pin) PORT_DDR(port) |= (1 << pin)
+#define SET_PIN_MODE_INPUT(port, pin) PORT_DDR(port) &= ~(1 << pin)
+#define SET_PIN_HIGH(port, pin) PORT_PORT(port) |= (1 << pin)
+#define SET_PIN_LOW(port, pin) PORT_PORT(port) &= ~(1 << pin)
 
 int main(void) {
 
-    DDRD |= (1 << PD7); // LED on pin PB2
+    SET_PIN_MODE_OUTPUT(VALVE_PORT, VALVE_4);
+    SET_PIN_MODE_OUTPUT(VALVE_PORT, VALVE_5);
+    SET_PIN_MODE_OUTPUT(VALVE_PORT, VALVE_6);
+    SET_PIN_MODE_OUTPUT(VALVE_PORT, VALVE_7);
 
-    // spi_init();
+    trace_init();
+
+    uint8_t seconds = 0;
 
     while (1) {
-        // spi_write((uint8_t[]){0xa5, 0x3C, 0x5a}, 3);
-        for (uint8_t i = 0; i < 5; i++) {
-            PORTD &= ~(1 << PD7); // output off
+        // 4 second delay
+        for (uint8_t i = 0; i < 200; i++) {
+            _delay_ms(20);
         }
 
-        PORTD |= (1 << PD7);  // output on
-        PORTD &= ~(1 << PD7); // output off
-    }
+        seconds++;
+        uint8_t phase = seconds >> 5;
+        switch (phase) {
+        case 0:
+            SET_PIN_HIGH(VALVE_PORT, VALVE_4);
+            SET_PIN_LOW(VALVE_PORT, VALVE_5);
+            SET_PIN_LOW(VALVE_PORT, VALVE_6);
+            SET_PIN_LOW(VALVE_PORT, VALVE_7);
+            break;
+        case 1:
+            SET_PIN_LOW(VALVE_PORT, VALVE_4);
+            SET_PIN_HIGH(VALVE_PORT, VALVE_5);
+            SET_PIN_LOW(VALVE_PORT, VALVE_6);
+            SET_PIN_LOW(VALVE_PORT, VALVE_7);
+            break;
+        case 2:
+            SET_PIN_LOW(VALVE_PORT, VALVE_4);
+            SET_PIN_LOW(VALVE_PORT, VALVE_5);
+            SET_PIN_HIGH(VALVE_PORT, VALVE_6);
+            SET_PIN_LOW(VALVE_PORT, VALVE_7);
+            break;
+        case 3:
+            SET_PIN_LOW(VALVE_PORT, VALVE_4);
+            SET_PIN_LOW(VALVE_PORT, VALVE_5);
+            SET_PIN_LOW(VALVE_PORT, VALVE_6);
+            SET_PIN_HIGH(VALVE_PORT, VALVE_7);
+            break;
+        default:
+            SET_PIN_LOW(VALVE_PORT, VALVE_4);
+            SET_PIN_LOW(VALVE_PORT, VALVE_5);
+            SET_PIN_LOW(VALVE_PORT, VALVE_6);
+            SET_PIN_LOW(VALVE_PORT, VALVE_7);
+            break;
+        }
 
+        trace_write((uint8_t[]){seconds, phase}, 2);
+    }
     return 0;
 }

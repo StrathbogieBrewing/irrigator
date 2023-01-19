@@ -25,14 +25,31 @@ function(add_avr_executable EXECUTABLE_NAME)
    set(map_file ${EXECUTABLE_NAME}.map)
    set(eeprom_image ${EXECUTABLE_NAME}-eeprom.hex)
 
-   add_executable(${elf_file} EXCLUDE_FROM_ALL ${ARGN})
-
-   set_target_properties(
-      ${elf_file}
-      PROPERTIES
-         COMPILE_FLAGS "-mmcu=${AVR_MCU_TYPE} -DF_CPU=${AVR_MCU_SPEED} -Wall -Os"
-         LINK_FLAGS "-mmcu=${AVR_MCU_TYPE} -Wl,--gc-sections -mrelax -Wl,-Map,${map_file}"
+   add_compile_options(
+      -DF_CPU=${AVR_MCU_SPEED}
+      -mmcu=${AVR_MCU_TYPE}
+      -fpack-struct
+      -fshort-enums
+      -Wall
+      -Werror
+      -pedantic
+      -pedantic-errors
+      -funsigned-char
+      -funsigned-bitfields
+      -ffunction-sections
+      -c
+      -std=gnu99
+      -Os
    )
+
+   add_link_options(
+      -mmcu=${AVR_MCU_TYPE} 
+      -Wl,--gc-sections 
+      -mrelax 
+      -Wl,-Map,${map_file}
+   )
+
+   add_executable(${elf_file} EXCLUDE_FROM_ALL ${ARGN})
 
    add_custom_command(
       OUTPUT ${hex_file}

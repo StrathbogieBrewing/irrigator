@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.11)
 
 set(AVR_MCU_TYPE atmega8)
 set(AVR_H_FUSE 0xDA)
@@ -17,7 +17,7 @@ set(AVR_UPLOADTOOL_PORT usb)
 #set(AVR_UPLOADTOOL_BITRATE 57600)
 set(AVR_UPLOADTOOL_BIT_RATE 4)
 
-INCLUDE(gcc-avr.cmake)
+include(gcc-avr.cmake)
 
 project(irrigator C ASM)
 
@@ -30,18 +30,13 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cobsm)
 include_directories(${cobsm_SOURCE_DIR}/include)
 
-
-
 add_avr_executable(
    ${PROJECT_NAME}
    src/main.c
+   src/trace.c
    ${cobsm_SOURCE_DIR}/src/cobsm.c
 )
 
-# avr_target_include_directories(
-#    ${PROJECT_NAME}
-#    ${cobsm_SOURCE_DIR}/include
-# )
 
 
 
