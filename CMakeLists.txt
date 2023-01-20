@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.18)
 
 set(AVR_MCU_TYPE atmega8)
 set(AVR_H_FUSE 0xDA)
@@ -17,25 +17,38 @@ set(AVR_UPLOADTOOL_PORT usb)
 #set(AVR_UPLOADTOOL_BITRATE 57600)
 set(AVR_UPLOADTOOL_BIT_RATE 4)
 
-include(gcc-avr.cmake)
+
 
 project(irrigator C ASM)
 
+include(avr-gcc.cmake)
+
+
+
+# include(FetchContent)
+# FetchContent_Declare(
+#    cobsm
+#    GIT_REPOSITORY https://github.com/StrathbogieBrewing/cobsm.git
+#    GIT_TAG        main
+# )
+# FetchContent_MakeAvailable(cobsm)
+# include_directories(${cobsm_SOURCE_DIR}/include)
+
 include(FetchContent)
 FetchContent_Declare(
-   cobsm
-   GIT_REPOSITORY https://github.com/StrathbogieBrewing/cobsm.git
+   acetrace
+   GIT_REPOSITORY https://github.com/StrathbogieBrewing/AceTrace.git
    GIT_TAG        main
 )
-FetchContent_MakeAvailable(cobsm)
-include_directories(${cobsm_SOURCE_DIR}/include)
+FetchContent_MakeAvailable(acetrace)
+   
+# include_directories(temp)
+add_executable(${elf_file} src/main.c )
 
-add_avr_executable(
-   ${PROJECT_NAME}
-   src/main.c
-   src/trace.c
-   ${cobsm_SOURCE_DIR}/src/cobsm.c
-)
+target_link_libraries(${elf_file} acetrace)
+
+
+
 
 
 
