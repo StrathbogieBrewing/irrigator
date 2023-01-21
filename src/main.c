@@ -74,7 +74,7 @@ int main(void) {
             break;
         }
 
-        trace_write((uint8_t[]){0x0F, seconds, phase, 0xF0}, 1);
+        trace_write((uint8_t[]){seconds, phase}, 2);
     }
     return 0;
 }

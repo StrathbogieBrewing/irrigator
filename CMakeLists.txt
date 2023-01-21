@@ -17,13 +17,9 @@ set(AVR_UPLOADTOOL_PORT usb)
 #set(AVR_UPLOADTOOL_BITRATE 57600)
 set(AVR_UPLOADTOOL_BIT_RATE 4)
 
-
-
 project(irrigator C ASM)
 
 include(avr-gcc.cmake)
-
-
 
 # include(FetchContent)
 # FetchContent_Declare(
