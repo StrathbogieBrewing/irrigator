@@ -2,7 +2,7 @@
 #include <string.h>
 #include <util/delay.h>
 
-#include "trace.h"
+// #include "trace.h"
 
 /* AVR GPIO helper macros */
 #define GPIO_INPUT 0
@@ -10,9 +10,9 @@
 #define GPIO_SET_BIT(type, port, bit) (type##port |= (1 << bit))
 #define GPIO_CLEAR_BIT(type, port, bit) (type##port &= ~(1 << bit))
 #define GPIO_GET_BIT(type, port, bit) ((type##port & (1 << bit)) ? 1 : 0)
-#define GPIO_SET(pin, value) (value ? GPIO_SET_BIT(PORT, pin) : GPIO_CLEAR_BIT(PORT, pin))
+#define GPIO_MODE(pin, mode) do{if(mode)  GPIO_SET_BIT(DDR, pin); else GPIO_CLEAR_BIT(DDR, pin);} while(0)
+#define GPIO_SET(pin, value) do{if(value) GPIO_SET_BIT(PORT, pin); else GPIO_CLEAR_BIT(PORT, pin);} while(0)
 #define GPIO_GET(pin) (GPIO_GET_BIT(PIN, pin))
-#define GPIO_MODE(pin, mode) (mode ? GPIO_SET_BIT(DDR, pin) : GPIO_CLEAR_BIT(DDR, pin))
 
 #define VALVE_4 D, 4
 #define VALVE_5 D, 5
@@ -24,7 +24,7 @@ int main(void) {
     GPIO_MODE(VALVE_5, GPIO_OUTPUT);
     GPIO_MODE(VALVE_6, GPIO_OUTPUT);
     GPIO_MODE(VALVE_7, GPIO_OUTPUT);
-    trace_init();
+    // trace_init();
     uint8_t seconds = 0;
     while (1) {
         // 4 second delay
@@ -65,7 +65,7 @@ int main(void) {
             GPIO_SET(VALVE_7, 0);
             break;
         }
-        trace_write((uint8_t[]){seconds, phase}, 2);
+        // trace_write((uint8_t[]){seconds, phase}, 2);
     }
     return 0;
 }
