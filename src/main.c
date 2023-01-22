@@ -4,30 +4,27 @@
 
 #include "trace.h"
 
-#define XSTR(x) #x
-#define STR(s) XSTR(s)
+#define VALVE_4 D, 4
+#define VALVE_5 D, 5
+#define VALVE_6 D, 6
+#define VALVE_7 D, 7
 
-#define PORT_DDR(port) DDR##port
-#define PORT_PORT(port) PORT##port
+#define GPIO_INPUT 0
+#define GPIO_OUTPUT 1
 
-#define VALVE_PORT D
+#define GPIO_SET(pin, value) (value ? GPIO_SET_BIT(PORT, pin) : GPIO_CLEAR_BIT(PORT, pin))
+#define GPIO_GET(pin) (GPIO_GET_BIT(PIN, pin))
+#define GPIO_MODE(pin, mode) (mode ? GPIO_SET_BIT(DDR, pin) : GPIO_CLEAR_BIT(DDR, pin))
 
-#define VALVE_4 4
-#define VALVE_5 5
-#define VALVE_6 6
-#define VALVE_7 7
-
-#define SET_PIN_MODE_OUTPUT(port, pin) PORT_DDR(port) |= (1 << pin)
-#define SET_PIN_MODE_INPUT(port, pin) PORT_DDR(port) &= ~(1 << pin)
-#define SET_PIN_HIGH(port, pin) PORT_PORT(port) |= (1 << pin)
-#define SET_PIN_LOW(port, pin) PORT_PORT(port) &= ~(1 << pin)
+#define GPIO_SET_BIT(type, port, bit) (type##port |= (1 << bit))
+#define GPIO_CLEAR_BIT(type, port, bit) (type##port &= ~(1 << bit))
+#define GPIO_GET_BIT(type, port, bit) ((type##port & (1 << bit)) ? 1 : 0)
 
 int main(void) {
-
-    SET_PIN_MODE_OUTPUT(VALVE_PORT, VALVE_4);
-    SET_PIN_MODE_OUTPUT(VALVE_PORT, VALVE_5);
-    SET_PIN_MODE_OUTPUT(VALVE_PORT, VALVE_6);
-    SET_PIN_MODE_OUTPUT(VALVE_PORT, VALVE_7);
+    GPIO_MODE(VALVE_4, GPIO_OUTPUT);
+    GPIO_MODE(VALVE_5, GPIO_OUTPUT);
+    GPIO_MODE(VALVE_6, GPIO_OUTPUT);
+    GPIO_MODE(VALVE_7, GPIO_OUTPUT);
 
     trace_init();
 
@@ -43,34 +40,34 @@ int main(void) {
         uint8_t phase = seconds >> 5;
         switch (phase) {
         case 0:
-            SET_PIN_HIGH(VALVE_PORT, VALVE_4);
-            SET_PIN_LOW(VALVE_PORT, VALVE_5);
-            SET_PIN_LOW(VALVE_PORT, VALVE_6);
-            SET_PIN_LOW(VALVE_PORT, VALVE_7);
+            GPIO_SET(VALVE_4, 1);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 0);
             break;
         case 1:
-            SET_PIN_LOW(VALVE_PORT, VALVE_4);
-            SET_PIN_HIGH(VALVE_PORT, VALVE_5);
-            SET_PIN_LOW(VALVE_PORT, VALVE_6);
-            SET_PIN_LOW(VALVE_PORT, VALVE_7);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 1);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 0);
             break;
         case 2:
-            SET_PIN_LOW(VALVE_PORT, VALVE_4);
-            SET_PIN_LOW(VALVE_PORT, VALVE_5);
-            SET_PIN_HIGH(VALVE_PORT, VALVE_6);
-            SET_PIN_LOW(VALVE_PORT, VALVE_7);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 1);
+            GPIO_SET(VALVE_4, 0);
             break;
         case 3:
-            SET_PIN_LOW(VALVE_PORT, VALVE_4);
-            SET_PIN_LOW(VALVE_PORT, VALVE_5);
-            SET_PIN_LOW(VALVE_PORT, VALVE_6);
-            SET_PIN_HIGH(VALVE_PORT, VALVE_7);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 1);
             break;
         default:
-            SET_PIN_LOW(VALVE_PORT, VALVE_4);
-            SET_PIN_LOW(VALVE_PORT, VALVE_5);
-            SET_PIN_LOW(VALVE_PORT, VALVE_6);
-            SET_PIN_LOW(VALVE_PORT, VALVE_7);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 0);
+            GPIO_SET(VALVE_4, 0);
             break;
         }
 
