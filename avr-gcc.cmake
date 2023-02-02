@@ -23,8 +23,8 @@ add_compile_options(
    -fshort-enums
    -Wall
    -Werror
-   -pedantic
-   -pedantic-errors
+   # -pedantic
+   # -pedantic-errors
    -funsigned-char
    -funsigned-bitfields
    -ffunction-sections
