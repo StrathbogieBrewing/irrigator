@@ -14,27 +14,8 @@
 #define GPIO_MODE(pin, mode) do {if(mode) GPIO_SET_BIT(DDR, pin); else GPIO_CLEAR_BIT(DDR, pin);} while(0)
 #define GPIO_SET(pin, value) do {if(value) GPIO_SET_BIT(PORT, pin); else GPIO_CLEAR_BIT(PORT, pin);} while(0)
 #define GPIO_GET(pin) (GPIO_GET_BIT(PIN, pin))
-
-static const uint8_t slots[16] = {
-    0b10010010,
-    0b01000100,
-    0b10100000,
-    0b01000000,
-    0b10010000,
-    0b01001000,
-    0b10100000,
-    0b01000000,
-
-    0b10010001,
-    0b01000100,
-    0b10100000,
-    0b01000000,
-    0b10010000,
-    0b01001000,
-    0b10100000,
-    0b01000000,
-};
 // clang-format on
+
 
 #define VALVE_0 B, 0
 #define VALVE_1 B, 1
@@ -46,6 +27,28 @@ static const uint8_t slots[16] = {
 #define VALVE_7 D, 7
 
 #define ALL_VALVES_OFF 8
+
+// clang-format off
+static const uint8_t slots[16] = {
+    0b10100000,
+    0b01010000,
+    0b10001000,
+    0b01000100,
+    0b10100000,
+    0b01010000,
+    0b10000010,
+    0b01000001,
+         
+    0b10100000,
+    0b01010000,
+    0b10001000,
+    0b01000100,
+    0b10100000,
+    0b01010000,
+    0b10000000,
+    0b01000000,
+};
+// clang-format on
 
 void activate_valve(uint8_t valve) {
     GPIO_MODE(VALVE_0, GPIO_OUTPUT);
@@ -68,13 +71,15 @@ void activate_valve(uint8_t valve) {
 }
 
 int main(void) {
+    uint8_t minute = 0;
 
     // trace_init();
-    uint8_t minute = 0;
+    activate_valve(ALL_VALVES_OFF);
+    
     while (1) {
 
         // 1 minute (60 seconds) delay between minute changes
-        for (uint16_t i = 0; i < (6 * 1); i++) {
+        for (uint16_t i = 0; i < (60 * 100); i++) {
             _delay_ms(10);
         }
 
@@ -83,6 +88,7 @@ int main(void) {
 
         if(slots[slot] & (1 << valve)) {
             activate_valve(valve);
+
         } else {
             activate_valve(ALL_VALVES_OFF);
         }
